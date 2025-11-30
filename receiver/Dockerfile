@@ -1,28 +1,39 @@
-# 1. المرحلة الأولى: البناء (Compilation Stage)
+# ==============================
+# 1. المرحلة الأولى: مرحلة البناء (Compilation Stage)
+# ==============================
 FROM oven/bun:latest AS builder
 WORKDIR /app
+# 1. نسخ ملفات الباكج والقفل
 COPY package.json bun.lock ./
-# تثبيت التبعيات الضرورية للبناء
+# 2. تثبيت جميع التبعيات (بما في ذلك devDependencies للتجميع)
 RUN bun install 
+# 3. نسخ كود المصدر
 COPY . .
-# تجميع كود TypeScript إلى JavaScript في مجلد dist
+# 4. تجميع كود TypeScript إلى JavaScript في مجلد dist
+# (يفترض أن أمر build في package.json هو: bun build ./src/index.ts --outdir ./dist --external "*")
 RUN bun run build 
 
-# 2. المرحلة الثانية: التشغيل (Runtime Stage)
-# استخدام صورة bun مرة أخرى للحجم الصغير
+# ==============================
+# 2. المرحلة الثانية: مرحلة التشغيل (Runtime Stage)
+# ==============================
 FROM oven/bun:latest 
 WORKDIR /app
 
-# نسخ التبعيات المطلوبة للتشغيل
+# 5. نسخ التبعيات المطلوبة للتشغيل (لصورة أخف)
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/bun.lock ./
-# تثبيت التبعيات التشغيلية فقط (بدون devDependencies)
 RUN bun install --production
 
-# نسخ الملفات المجمعة النهائية
+# 6. نسخ الملفات التنفيذية والاعتماديات التي يحتاجها ملف index.js:
+
+# نسخ مجلد التجميع (dist)
 COPY --from=builder /app/dist ./dist 
-COPY --from=builder /app/src/config/DB.config.ts ./src/config/DB.config.ts
-# إذا كان لديك ملفات أخرى غير مجمعة في dist وتحتاجها (مثل ملفات الكونفيج التي تقرأ مباشرة)
+
+# نسخ مجلدات SRC التي يتم استيرادها بالمسار المطلق (لحل خطأ 'models/activity/activity.service')
+# يجب نسخها بنفس الهيكلية التي يتوقعها index.js
+COPY --from=builder /app/src/models ./src/models 
+COPY --from=builder /app/src/config ./src/config
+COPY --from=builder /app/utils ./utils 
 
 # أمر تشغيل الملف المجمع
 CMD ["bun", "dist/index.js"]

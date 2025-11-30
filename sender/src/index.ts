@@ -14,6 +14,7 @@ async function runPublisher() {
   try {
     nc = await connect({ servers: NATS_URL });
     console.log(`connect successfully to ${nc.getServer()}`);
+    console.log(`sender i listen`);
 
     const orderDetails = {
       eventType: "ORDER_CREATED",
