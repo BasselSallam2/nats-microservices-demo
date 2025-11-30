@@ -1,10 +1,10 @@
 import { connect } from "nats";
 const SUBJECT = "orders";
-import activityService from "./models/activity/activity.service";
 import express from "express";
-import { connectDB } from "./config/DB.config";
 import "dotenv/config";
 const app = express();
+import activityService from "../src/models/activity/activity.service";
+import { connectDB } from "../src/config/DB.config";
 
 
 
