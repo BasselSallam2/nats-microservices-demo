@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # 1. سيرفر NATS (الوسيط)
+  nats-server:
+    image: nats:latest
+    container_name: nats-server
+    # البورت الافتراضي لـ NATS
+    ports:
+      - "4222:4222"
+    networks:
+      - app-network
+
+  # 2. سيرفر Receiver (المستهلك)
+  receiver:
+    build:
+      context: ./receiver
+      dockerfile: Dockerfile
+    container_name: receiver
+    restart: always
+    env_file:
+      - ./receiver/.env
+    ports:
+      - "3001:3001" 
+    depends_on:
+      - nats-server
+    networks:
+      - app-network
+
+  # 3. سيرفر Sender (المرسل)
+  sender:
+    build:
+      context: ./sender
+      dockerfile: Dockerfile
+    container_name: sender
+    restart: always
+    env_file:
+      - ./sender/.env
+    ports:
+      - "3002:3002" 
+    depends_on:
+      - nats-server
+    networks:
+      - app-network
+
+# تعريف الشبكة المحلية
+networks:
+  app-network:
+    driver: bridge
