@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
-const { Schema  , model} = mongoose;
-
+const { Schema } = mongoose;
 const ActivityLogSchema = new Schema(
   {
     eventType: {
@@ -8,19 +7,16 @@ const ActivityLogSchema = new Schema(
       required: true,
       index: true,
     },
-
     timestamp: {
       type: Date,
       default: Date.now,
       index: true,
     },
-
     actorType: {
       type: String,
       required: false,
       enum: ["User", "Admin", "System"],
     },
-
     actorId: {
       type: mongoose.Schema.Types.ObjectId,
       required: false,
@@ -33,27 +29,21 @@ const ActivityLogSchema = new Schema(
       type: String,
       required: false,
     },
-
     targetId: {
       type: mongoose.Schema.Types.ObjectId,
       required: false,
     },
-
     metadata: {
       type: mongoose.Schema.Types.Mixed,
       required: false,
     },
-
     location: {
       ipAddress: { type: String },
-      platform: { type: String },
+      platform: { type: String }, 
     },
   },
   {
-    timestamps: true, 
+    timestamps: { createdAt: true, updatedAt: false }, 
   }
 );
-
-const ActivityLog = model("ActivityLog", ActivityLogSchema);
-
-export { ActivityLog };
+export { ActivityLogSchema };
